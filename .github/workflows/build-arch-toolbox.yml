@@ -4,8 +4,8 @@ on:
   pull_request:
     branches:
       - arch-toolbox
-  # schedule:
-  #   - cron: "05 10 * * *" # 10:05am UTC everyday
+  schedule:
+    - cron: "0 8 * * *" # 8:00am UTC everyday
   push:
     branches:
       - arch-toolbox
