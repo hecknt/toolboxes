@@ -1,8 +1,8 @@
 FROM ghcr.io/hecknt/arch-toolbox:latest
  
 LABEL com.github.containers.toolbox="true" \
-      usage="This image is meant to be used with the toolbox or distrobox command" \
-      summary="A cloud-native terminal experience powered by Arch Linux"
+  usage="This image is meant to be used with the toolbox or distrobox command" \
+  summary="A cloud-native terminal experience powered by Arch Linux"
 
 # Add Chaotic AUR Repo
 RUN pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
