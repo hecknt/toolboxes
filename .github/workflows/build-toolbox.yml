@@ -3,21 +3,21 @@ name: Build container image
 on:
   pull_request:
     branches:
-      - arch-toolbox
-  # schedule:
-  #   - cron: "05 10 * * *" # 10:05am UTC everyday
+      - arch-libvirt
+  schedule:
+    - cron: "20 8 * * *" # 8:20am UTC everyday
   push:
     branches:
-      - arch-toolbox
+      - arch-libvirt
     paths-ignore:
       - "**/README.md"
       - "**/LICENSE"
   workflow_dispatch:
 
 env:
-    IMAGE_DESC: "Arch Linux Toolbox Image"
-    IMAGE_KEYWORDS: "distrobox,toolbox,archlinux,arch"
-    IMAGE_NAME: "arch-toolbox"
+    IMAGE_DESC: "Arch Linux Toolbox Image with Virtualization Capabilities"
+    IMAGE_KEYWORDS: "distrobox,toolbox,archlinux,arch,libvirt,virtualization,qemu"
+    IMAGE_NAME: "arch-libvirt"
     IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
     DEFAULT_TAG: "latest"
 
