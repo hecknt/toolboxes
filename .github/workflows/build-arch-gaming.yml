@@ -1,5 +1,5 @@
 ---
-name: Build arch-toolbox image
+name: Build arch-gaming image
 on:
   pull_request:
     branches:
@@ -17,7 +17,7 @@ on:
 env:
     IMAGE_DESC: "Arch Linux Gaming Toolbox Image"
     IMAGE_KEYWORDS: "distrobox,toolbox,archlinux,arch,gaming,steam,lutris,wine,gamescope"
-    IMAGE_NAME: "arch-toolbox"
+    IMAGE_NAME: "arch-gaming"
     IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
     DEFAULT_TAG: "latest"
 
