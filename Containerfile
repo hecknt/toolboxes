@@ -1,82 +1,48 @@
-FROM docker.io/archlinux/archlinux:latest
+FROM ghcr.io/hecknt/arch-toolbox:latest
  
 LABEL com.github.containers.toolbox="true" \
       usage="This image is meant to be used with the toolbox or distrobox command" \
       summary="A cloud-native terminal experience powered by Arch Linux"
 
-COPY system_files /
-RUN sed -i -e 's/NoProgressBar/#NoProgressBar/' -e 's/NoExtract/#NoExtract/' /etc/pacman.conf
+# Add Chaotic AUR Repo
+RUN pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+RUN pacman-key --init && pacman-key --lsign-key 3056513887B78AEB
+RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' --noconfirm
+RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
+RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
 
-# Install packages that distrobox installs to speed up first boot
-RUN pacman -Syu --needed --noconfirm \
-		bash-completion \
-		bc \
-		curl \
-		diffutils \
-		findutils \
-		glibc \
-    glibc-locales \
-    git \
-		gnupg \
-		iputils \
-		inetutils \
-		keyutils \
-		less \
-		lsof \
-		man-db \
-		man-pages \
-		mlocate \
-		mtr \
-		ncurses \
-		nss-mdns \
-		openssh \
-		pigz \
-		pinentry \
-		procps-ng \
-		rsync \
-		shadow \
-		sudo \
-		tcpdump \
-		time \
-		traceroute \
-		tree \
-		tzdata \
-		unzip \
-		util-linux \
-		util-linux-libs \
-		vte-common \
-		wget \
-		words \
-		xorg-xauth \
-		zip \
-		mesa \
-		vulkan-intel \
-		vulkan-radeon
+RUN pacman -Syu --noconfirm
 
-# Distrobox Integration
-RUN git clone https://github.com/89luca89/distrobox.git --single-branch /tmp/distrobox && \
-    cp /tmp/distrobox/distrobox-host-exec /usr/bin/distrobox-host-exec && \
-    ln -s /usr/bin/distrobox-host-exec /usr/bin/flatpak && \
-    wget https://github.com/1player/host-spawn/releases/download/$(cat /tmp/distrobox/distrobox-host-exec | grep host_spawn_version= | cut -d "\"" -f 2)/host-spawn-$(uname -m) -O /usr/bin/host-spawn && \
-    chmod +x /usr/bin/host-spawn && \
-    rm -drf /tmp/distrobox
-
-# Helpful packages
-RUN pacman -Syu --needed --noconfirm \
-  btop \
-  htop \
-  nano \
-  micro \
-  neovim \
-  pipewire \
-  pipewire-pulse \
-  pipewire-jack \
-  pipewire-alsa \
-  wireplumber \
-  noto-fonts \
-  noto-fonts-cjk \
-  noto-fonts-emoji \
-  noto-fonts-extra
+# Install the juice
+RUN pacman -Syu --noconfirm --needed \
+  mesa \
+  libva-intel-driver \
+  libva-mesa-driver \
+  vpl-gpu-rt \
+  vulkan-icd-loader \
+  vulkan-intel \
+  vulkan-radeon \
+  lib32-vulkan-icd-loader \
+  lib32-vulkan-intel \
+  lib32-vulkan-radeon \
+  lib32-mesa \
+  lib32-pipewire \
+  lib32-pipewire-jack \
+  lib32-libpulse \
+  lib32-mangohud \
+  xdg-user-dirs \
+  steam \
+  gamescope \
+  umu-launcher \
+  wine \
+  winetricks \
+  mangohud \
+  lutris \
+  clinfo \
+  chaotic-aur/obs-vkcapture-git \
+  chaotic-aur/lib32-obs-vkcapture-git \
+  chaotic-aur/steamcmd \
+  chaotic-aur/protontricks-git
 
 # Cleanup
 RUN rm -rf /var/cache/pacman/pkg/*
