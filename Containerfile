@@ -11,7 +11,8 @@ RUN pacman -Syu --needed --noconfirm \
   guestfs-tools \
   swtpm \
   qemu-desktop \
-  dnsmasq
+  dnsmasq \
+  dmidecode
 
 RUN systemctl enable libvirtd
 
