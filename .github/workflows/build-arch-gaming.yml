@@ -5,7 +5,7 @@ on:
     branches:
       - arch-gaming
   schedule:
-    - cron: "0 8 * * *" # 8:00am UTC everyday
+    - cron: "40 8 * * *" # 8:40am UTC everyday
   push:
     branches:
       - arch-gaming
