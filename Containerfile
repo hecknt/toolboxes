@@ -63,6 +63,8 @@ RUN git clone https://github.com/89luca89/distrobox.git --single-branch /tmp/dis
 
 # Helpful packages
 RUN pacman -Syu --needed --noconfirm \
+  btop \
+  htop \
   nano \
   micro \
   neovim \
