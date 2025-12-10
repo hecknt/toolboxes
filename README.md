@@ -30,7 +30,7 @@ This will create the distrobox with an init hook to add your user to the libvirt
 Once the image has been created, you can optionally export the pre-installed [Virtual Machine Manager](https://virt-manager.org/) with the following command:
 
 ```bash
-distrobox enter --root --name libvirt -- 'distrobox-export --app virt-manager'
+distrobox enter --root --name libvirt -- distrobox-export --app virt-manager
 ```
 
 After this, you will have `Virtual Machine Manager (on libvirt)` as an application entry in your application launcher. Launch it, create a virtual machine, and it will run right out of the box! <sub>(provided you have virtualization enabled in your motherboard's bios)</sub>
