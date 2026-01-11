@@ -1,0 +1,136 @@
+---
+name: Build arch-gaming image
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "40 8 * * *" # 8:40am UTC everyday
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/README.md"
+      - "**/LICENSE"
+  workflow_dispatch:
+
+env:
+    IMAGE_DESC: "Arch Linux Gaming Toolbox Image"
+    IMAGE_KEYWORDS: "distrobox,toolbox,archlinux,arch,gaming,steam,lutris,wine,gamescope"
+    IMAGE_NAME: "arch-gaming"
+    IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+    DEFAULT_TAG: "latest"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build_push:
+    name: Build and push image
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Prepare environment
+        run: |
+          # Lowercase the image uri
+          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> "${GITHUB_ENV}"
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> "${GITHUB_ENV}"
+
+      - name: Mount BTRFS for podman storage
+        id: container-storage-action
+        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+        with:
+          mount-opts: noatime,compress-force=zstd:2
+
+      - name: Mount BTRFS for /var/tmp
+        id: var-tmp-storage-action
+        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+        continue-on-error: true
+        with:
+          mount-opts: noatime,compress-force=zstd:2
+          target-dir: /var/tmp
+
+      # Checkout push-to-registry action GitHub repository
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+
+      - name: Get current date
+        id: date
+        run: |
+          # This generates a timestamp like what is defined on the ArtifactHub documentation
+          # E.G: 2022-02-08T15:38:15Z'
+          # https://artifacthub.io/docs/topics/repositories/container-images/
+          # https://linux.die.net/man/1/date
+          echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Image Metadata
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5
+        id: metadata
+        with:
+          tags: |
+            type=raw,value=${{ env.DEFAULT_TAG }}
+            type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
+            type=raw,value={{date 'YYYYMMDD'}}
+            type=sha,enable=${{ github.event_name == 'pull_request' }}
+            type=ref,event=pr
+          labels: |
+            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository_owner }}/toolboxes/${{ github.sha }}/arch-gaming/README.md
+            io.artifacthub.package.license=MIT
+          sep-tags: " "
+
+      # Build image using Buildah action
+      - name: Build Image
+        id: build_image
+        run: |
+          cd arch-gaming
+          sudo buildah build \
+          --storage-driver=overlay \
+          --format=oci \
+          --file ./Containerfile \
+          --tag ${IMAGE_NAME}:${DEFAULT_TAG}
+
+      - name: Print disk usage after image build
+        run: df -h
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo skopeo login --username ${{ github.actor }} --password-stdin ghcr.io
+
+      - name: Push To GHCR
+        if: github.event_name != 'pull_request'
+        id: push
+        run: |
+          IMAGE_REF="${{ steps.rechunk.outputs.ref || format('containers-storage:localhost/{0}:{1}', env.IMAGE_NAME, env.DEFAULT_TAG) }}"
+
+          DIGEST=$(sudo skopeo inspect --format '{{.Digest}}' "$IMAGE_REF")
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+          for tag in ${{ steps.metadata.outputs.tags }}; do
+            dest_image="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:$tag"
+            sudo skopeo copy "$IMAGE_REF" docker://$dest_image
+            echo "Pushed $dest_image"
+          done
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
+        with:
+          cosign-release: "v2.6.1"
+        if: github.event_name != 'pull_request'
+
+      - name: Sign container image
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE_FULL="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}"
+          for tag in ${{ steps.metadata.outputs.tags }}; do
+            cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_FULL:$tag
+          done
+        env:
+          TAGS: ${{ steps.push.outputs.digest }}
+          COSIGN_EXPERIMENTAL: false
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
