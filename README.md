@@ -10,6 +10,6 @@ This is a repository of containers designed for usage with Toolbox/Distrobox. Th
 
 ## Images
 
-- [arch-toolbox](https://github.com/hecknt/toolboxes/tree/arch-toolbox) - an Arch Linux base image with all of the necessary packages for distrobox to function fully with it out of the box.
-- [arch-libvirt](https://github.com/hecknt/toolboxes/tree/arch-libvirt) - an Arch Linux image with libvirtd and virt-manager pre-installed. A perfect container to run virtual machines inside of.
-- [arch-gaming](https://github.com/hecknt/toolboxes/tree/arch-gaming) - an Arch Linux image with steam, lutris, gamescope, and various other gaming utilities pre-installed. A perfect container to play video games with.
+- [arch-toolbox](https://github.com/hecknt/toolboxes/tree/main/arch-toolbox) - an Arch Linux base image with all of the necessary packages for distrobox to function fully with it out of the box.
+- [arch-libvirt](https://github.com/hecknt/toolboxes/tree/main/arch-libvirt) - an Arch Linux image with libvirtd and virt-manager pre-installed. A perfect container to run virtual machines inside of.
+- [arch-gaming](https://github.com/hecknt/toolboxes/tree/main/arch-gaming) - an Arch Linux image with steam, lutris, gamescope, and various other gaming utilities pre-installed. A perfect container to play video games with.
